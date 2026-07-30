@@ -1,0 +1,27 @@
+generator client {
+  provider = "prisma-client"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "sqlite"
+}
+
+model ReviewSubmission {
+  id        String   @id @default(cuid())
+  createdAt DateTime @default(now())
+
+  course       String
+  reasons      String // JSON-encoded string array
+  highlights   String // JSON-encoded string array
+  trainerName  String?
+  impression   String?
+  rating       Int
+  note         String?
+
+  drafts        String // JSON-encoded string array of the 3 generated drafts
+  chosenDraft   String? // the draft text the customer actually picked/edited
+  postedToGoogle Boolean @default(false)
+
+  @@index([createdAt])
+}
