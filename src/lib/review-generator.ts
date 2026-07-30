@@ -162,12 +162,12 @@ export function generateDrafts(answers: SurveyAnswers): string[] {
 
 export function resolveHighlightPhrases(labels: string[]): string[] {
   return labels
-    .map((label) => HIGHLIGHT_OPTIONS.find((option) => option.label === label)?.phrase)
+    .map((label): string | undefined => HIGHLIGHT_OPTIONS.find((option) => option.label === label)?.phrase)
     .filter((phrase): phrase is string => Boolean(phrase));
 }
 
 export function resolveReasonPhrases(labels: string[]): string[] {
   return labels
-    .map((label) => REASON_OPTIONS.find((option) => option.label === label)?.phrase)
+    .map((label): string | undefined => REASON_OPTIONS.find((option) => option.label === label)?.phrase)
     .filter((phrase): phrase is string => Boolean(phrase));
 }
