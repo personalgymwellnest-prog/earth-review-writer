@@ -4,7 +4,7 @@ import { useState } from "react";
 import { ChipGroup } from "@/components/ChipGroup";
 import { StarRating } from "@/components/StarRating";
 import { DraftCard } from "@/components/DraftCard";
-import { COURSE_OPTIONS, HIGHLIGHT_OPTIONS, REASON_OPTIONS } from "@/lib/survey-options";
+import { HIGHLIGHT_OPTIONS, IMPRESSION_OPTIONS, REASON_OPTIONS } from "@/lib/survey-options";
 
 type SurveyFormProps = {
   googleReviewUrl: string;
@@ -16,20 +16,16 @@ const DRAFT_LABELS = ["下書き案 1(丁寧)", "下書き案 2(温かみ)", "�
 
 export function SurveyForm({ googleReviewUrl }: SurveyFormProps) {
   const [stage, setStage] = useState<Stage>("form");
-  const [course, setCourse] = useState<string[]>([]);
   const [reasons, setReasons] = useState<string[]>([]);
   const [highlights, setHighlights] = useState<string[]>([]);
-  const [trainerName, setTrainerName] = useState("");
-  const [impression, setImpression] = useState("");
+  const [impressions, setImpressions] = useState<string[]>([]);
   const [rating, setRating] = useState(0);
-  const [note, setNote] = useState("");
   const [consent, setConsent] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [submissionId, setSubmissionId] = useState<string | null>(null);
   const [drafts, setDrafts] = useState<string[]>([]);
 
   function validate(): string | null {
-    if (course.length === 0) return "体験したコースを選んでください。";
     if (highlights.length === 0) return "良かった点を1つ以上選んでください。";
     if (rating === 0) return "総合満足度を選んでください。";
     if (!consent) return "内容が実際の体験に基づくことの確認にチェックしてください。";
@@ -49,15 +45,7 @@ export function SurveyForm({ googleReviewUrl }: SurveyFormProps) {
       const response = await fetch("/api/reviews", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          course: course[0],
-          reasons,
-          highlights,
-          trainerName: trainerName.trim() || undefined,
-          impression: impression.trim() || undefined,
-          rating,
-          note: note.trim() || undefined,
-        }),
+        body: JSON.stringify({ reasons, highlights, impressions, rating }),
       });
       const data = await response.json();
       if (!response.ok || !data.ok) {
@@ -124,18 +112,13 @@ export function SurveyForm({ googleReviewUrl }: SurveyFormProps) {
       className="flex flex-col gap-10"
     >
       <section className="flex flex-col gap-3">
-        <h2 className="font-serif text-lg text-ink">1. 体験されたコースを教えてください</h2>
-        <ChipGroup options={COURSE_OPTIONS} selected={course} onChange={setCourse} mode="single" />
-      </section>
-
-      <section className="flex flex-col gap-3">
-        <h2 className="font-serif text-lg text-ink">2. 体験のきっかけ・お悩み(任意・複数選択可)</h2>
+        <h2 className="font-serif text-lg text-ink">1. 体験のきっかけ・お悩み(任意・複数選択可)</h2>
         <ChipGroup options={REASON_OPTIONS.map((option) => option.label)} selected={reasons} onChange={setReasons} />
       </section>
 
       <section className="flex flex-col gap-3">
-        <h2 className="font-serif text-lg text-ink">3. 体験で良かったところ</h2>
-        <p className="text-xs text-ink-soft">1つ以上選んでください。</p>
+        <h2 className="font-serif text-lg text-ink">2. 体験で良かったところ</h2>
+        <p className="text-xs text-ink-soft">当てはまるものを選んでください(1つ以上・複数選択可)。</p>
         <ChipGroup
           options={HIGHLIGHT_OPTIONS.map((option) => option.label)}
           selected={highlights}
@@ -144,41 +127,17 @@ export function SurveyForm({ googleReviewUrl }: SurveyFormProps) {
       </section>
 
       <section className="flex flex-col gap-3">
-        <h2 className="font-serif text-lg text-ink">4. 担当してくれたトレーナーのお名前(わかれば・任意)</h2>
-        <input
-          type="text"
-          value={trainerName}
-          onChange={(event) => setTrainerName(event.target.value)}
-          placeholder="例:山田"
-          className="w-full max-w-sm rounded-xl border border-line bg-paper-alt px-4 py-3 text-sm text-ink focus:border-accent focus:outline-none"
+        <h2 className="font-serif text-lg text-ink">3. 体験してみて感じた変化や印象(任意・複数選択可)</h2>
+        <ChipGroup
+          options={IMPRESSION_OPTIONS.map((option) => option.label)}
+          selected={impressions}
+          onChange={setImpressions}
         />
       </section>
 
       <section className="flex flex-col gap-3">
-        <h2 className="font-serif text-lg text-ink">5. 体験してみて感じた変化や印象(任意)</h2>
-        <textarea
-          value={impression}
-          onChange={(event) => setImpression(event.target.value)}
-          rows={3}
-          placeholder="例:体が軽くなった気がした、続けられそうだと思った、など"
-          className="w-full rounded-xl border border-line bg-paper-alt px-4 py-3 text-sm text-ink focus:border-accent focus:outline-none"
-        />
-      </section>
-
-      <section className="flex flex-col gap-3">
-        <h2 className="font-serif text-lg text-ink">6. 総合満足度</h2>
+        <h2 className="font-serif text-lg text-ink">4. 総合満足度</h2>
         <StarRating value={rating} onChange={setRating} />
-      </section>
-
-      <section className="flex flex-col gap-3">
-        <h2 className="font-serif text-lg text-ink">7. そのほか一言(任意)</h2>
-        <textarea
-          value={note}
-          onChange={(event) => setNote(event.target.value)}
-          rows={3}
-          placeholder="伝えたいことがあれば自由にご記入ください"
-          className="w-full rounded-xl border border-line bg-paper-alt px-4 py-3 text-sm text-ink focus:border-accent focus:outline-none"
-        />
       </section>
 
       <label className="flex items-start gap-3 text-sm text-ink-soft">
@@ -188,7 +147,7 @@ export function SurveyForm({ googleReviewUrl }: SurveyFormProps) {
           onChange={(event) => setConsent(event.target.checked)}
           className="mt-1 h-4 w-4 accent-[var(--color-accent)]"
         />
-        入力する内容は、実際に自分が体験して感じたことに基づきます。
+        選んだ内容は、実際に自分が体験して感じたことに基づきます。
       </label>
 
       {error && <p className="text-sm text-red-700">{error}</p>}

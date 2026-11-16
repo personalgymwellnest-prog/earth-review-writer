@@ -11,7 +11,7 @@ model ReviewSubmission {
   id        String   @id @default(cuid())
   createdAt DateTime @default(now())
 
-  course       String
+  course       String? // no longer asked; kept for old rows
   reasons      String // JSON-encoded string array
   highlights   String // JSON-encoded string array
   trainerName  String?

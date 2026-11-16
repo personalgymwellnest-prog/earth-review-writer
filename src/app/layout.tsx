@@ -17,8 +17,8 @@ const shipporiMincho = Shippori_Mincho({
   display: "swap",
 });
 
-const title = `クチコミ投稿にご協力ください｜${SITE_NAME} ${STORE.areaName}店`;
-const description = "体験のご感想を教えていただくと、Googleクチコミの下書きを自動作成します。所要時間は1〜2分ほどです。";
+const title = `クチコミ投稿にご協力ください｜${STORE.name}`;
+const description = "体験のご感想を教えていただくと、Googleクチコミの下書きを自動作成します。選ぶだけで、所要時間は1分ほどです。";
 
 export const metadata: Metadata = {
   metadataBase: new URL(SITE_URL),

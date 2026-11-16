@@ -1,10 +1,3 @@
-export const COURSE_OPTIONS = [
-  "30分コース",
-  "60分コース",
-  "食事アドバイス中心の体験",
-  "体験カウンセリング",
-] as const;
-
 // `phrase` is the noun form used when the generator drops it into a sentence
 // (e.g. "運動不足が気になっていて…"). `label` is what the chip shows.
 export const REASON_OPTIONS = [
@@ -22,6 +15,10 @@ export const HIGHLIGHT_OPTIONS = [
   {
     label: "トレーナーの説明がわかりやすかった",
     phrase: "トレーナーさんの説明がとても丁寧でわかりやすかったです。",
+  },
+  {
+    label: "トレーナーが親身に対応してくれた",
+    phrase: "トレーナーさんが親身に話を聞いてくれて、安心して相談できました。",
   },
   {
     label: "雰囲気が良くリラックスできた",
@@ -49,4 +46,39 @@ export const HIGHLIGHT_OPTIONS = [
   },
 ] as const;
 
-export type CourseOption = (typeof COURSE_OPTIONS)[number];
+// Each impression has one complete sentence per tone, in the same order as
+// TONES in review-generator.ts: [丁寧, 温かみ, シンプル].
+export const IMPRESSION_OPTIONS = [
+  {
+    label: "体が軽くなった気がした",
+    variants: [
+      "体験後は、体が軽くなったように感じました。",
+      "終わったあとに体がふわっと軽くなった気がして、嬉しくなりました。",
+      "体が軽くなった気がしました。",
+    ],
+  },
+  {
+    label: "続けられそうだと思った",
+    variants: [
+      "無理なく続けられそうだと感じました。",
+      "これなら自分のペースで続けられそうだと思えました。",
+      "続けられそうだと思いました。",
+    ],
+  },
+  {
+    label: "運動への不安が減った",
+    variants: [
+      "運動に対する不安が和らぎ、前向きな気持ちになりました。",
+      "運動が苦手でも大丈夫なんだと、不安が軽くなりました。",
+      "運動への不安が減りました。",
+    ],
+  },
+  {
+    label: "やる気が出た",
+    variants: [
+      "体験を通して、目標に向けて頑張ろうという意欲が湧きました。",
+      "気持ちが前向きになって、頑張ろうというやる気が出ました。",
+      "やる気が出ました。",
+    ],
+  },
+] as const;

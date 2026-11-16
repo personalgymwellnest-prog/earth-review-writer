@@ -1,23 +1,26 @@
 import { NextResponse } from "next/server";
 import { z } from "zod";
 import { prisma } from "@/lib/prisma";
-import { generateDrafts, resolveHighlightPhrases, resolveReasonPhrases } from "@/lib/review-generator";
-import { COURSE_OPTIONS, HIGHLIGHT_OPTIONS, REASON_OPTIONS } from "@/lib/survey-options";
+import {
+  generateDrafts,
+  resolveHighlightPhrases,
+  resolveImpressionVariants,
+  resolveReasonPhrases,
+} from "@/lib/review-generator";
+import { HIGHLIGHT_OPTIONS, IMPRESSION_OPTIONS, REASON_OPTIONS } from "@/lib/survey-options";
 
 const reasonLabels = REASON_OPTIONS.map((option) => option.label);
 const highlightLabels = HIGHLIGHT_OPTIONS.map((option) => option.label);
+const impressionLabels = IMPRESSION_OPTIONS.map((option) => option.label);
 
 const submitSchema = z.object({
-  course: z.enum(COURSE_OPTIONS),
   reasons: z.array(z.enum(reasonLabels as [string, ...string[]])).max(reasonLabels.length),
   highlights: z
     .array(z.enum(highlightLabels as [string, ...string[]]))
     .min(1, "良かった点を1つ以上選んでください")
     .max(highlightLabels.length),
-  trainerName: z.string().trim().max(30).optional(),
-  impression: z.string().trim().max(200).optional(),
+  impressions: z.array(z.enum(impressionLabels as [string, ...string[]])).max(impressionLabels.length),
   rating: z.number().int().min(1).max(5),
-  note: z.string().trim().max(300).optional(),
 });
 
 export async function POST(request: Request) {
@@ -33,13 +36,10 @@ export async function POST(request: Request) {
 
   const answers = parsed.data;
   const drafts = generateDrafts({
-    course: answers.course,
     reasons: resolveReasonPhrases(answers.reasons),
     highlights: resolveHighlightPhrases(answers.highlights),
-    trainerName: answers.trainerName,
-    impression: answers.impression,
+    impressions: resolveImpressionVariants(answers.impressions),
     rating: answers.rating,
-    note: answers.note,
   });
 
   // The draft text is generated locally and doesn't depend on the database,
@@ -50,13 +50,10 @@ export async function POST(request: Request) {
   try {
     const submission = await prisma.reviewSubmission.create({
       data: {
-        course: answers.course,
         reasons: JSON.stringify(answers.reasons),
         highlights: JSON.stringify(answers.highlights),
-        trainerName: answers.trainerName || null,
-        impression: answers.impression || null,
+        impression: answers.impressions.length > 0 ? JSON.stringify(answers.impressions) : null,
         rating: answers.rating,
-        note: answers.note || null,
         drafts: JSON.stringify(drafts),
       },
     });

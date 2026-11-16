@@ -6,6 +6,17 @@ import { prisma } from "@/lib/prisma";
 
 export const dynamic = "force-dynamic";
 
+// Impressions are stored as a JSON array; older rows hold plain free text.
+function parseImpressions(value: string | null): string[] {
+  if (!value) return [];
+  try {
+    const parsed: unknown = JSON.parse(value);
+    return Array.isArray(parsed) ? parsed.map(String) : [String(parsed)];
+  } catch {
+    return [value];
+  }
+}
+
 export default async function AdminPage() {
   const cookieStore = await cookies();
   const authed = isValidAdminToken(cookieStore.get(ADMIN_COOKIE_NAME)?.value);
@@ -53,6 +64,7 @@ export default async function AdminPage() {
           const drafts = JSON.parse(submission.drafts) as string[];
           const highlights = JSON.parse(submission.highlights) as string[];
           const reasons = JSON.parse(submission.reasons) as string[];
+          const impressions = parseImpressions(submission.impression);
           return (
             <article
               key={submission.id}
@@ -60,8 +72,7 @@ export default async function AdminPage() {
             >
               <div className="mb-3 flex flex-wrap items-center gap-3 text-xs text-ink-soft">
                 <span>{submission.createdAt.toLocaleString("ja-JP")}</span>
-                <span>・{submission.course}</span>
-                <span>・満足度 {"★".repeat(submission.rating)}</span>
+                <span>満足度 {"★".repeat(submission.rating)}</span>
                 {submission.postedToGoogle && (
                   <span className="rounded-full bg-moss/10 px-2 py-0.5 text-moss">投稿済み</span>
                 )}
@@ -71,14 +82,8 @@ export default async function AdminPage() {
                 <p className="mb-1 text-xs text-ink-soft">きっかけ: {reasons.join(" / ")}</p>
               )}
               <p className="mb-1 text-xs text-ink-soft">良かった点: {highlights.join(" / ")}</p>
-              {submission.trainerName && (
-                <p className="mb-1 text-xs text-ink-soft">担当: {submission.trainerName}</p>
-              )}
-              {submission.impression && (
-                <p className="mb-1 text-xs text-ink-soft">印象: {submission.impression}</p>
-              )}
-              {submission.note && (
-                <p className="mb-3 text-xs text-ink-soft">一言: {submission.note}</p>
+              {impressions.length > 0 && (
+                <p className="mb-3 text-xs text-ink-soft">印象: {impressions.join(" / ")}</p>
               )}
 
               {submission.chosenDraft ? (

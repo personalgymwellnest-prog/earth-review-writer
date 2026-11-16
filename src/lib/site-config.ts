@@ -5,7 +5,7 @@ export const SITE_NAME = "パーソナルジムEARTH";
 export const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL?.trim() || "http://localhost:3003";
 
 export const STORE = {
-  name: "EARTH 堺市北区店",
+  name: "EARTH",
   areaName: "堺市北区",
   fullAddress: "大阪府堺市北区北長尾町1-5-13 Bel Rosso 2F",
   mapLinkHref:
