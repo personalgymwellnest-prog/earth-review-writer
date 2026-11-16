@@ -74,7 +74,7 @@ export default async function AdminPage() {
               <div className="mb-3 flex flex-wrap items-center gap-3 text-xs text-ink-soft">
                 <span>{submission.createdAt.toLocaleString("ja-JP")}</span>
                 <span>{submission.service === "pilates" ? "ピラティス" : "パーソナルジム"}</span>
-                <span>満足度 {"★".repeat(submission.rating)}</span>
+                {submission.rating ? <span>満足度 {"★".repeat(submission.rating)}</span> : null}
                 {submission.postedToGoogle && (
                   <span className="rounded-full bg-moss/10 px-2 py-0.5 text-moss">投稿済み</span>
                 )}

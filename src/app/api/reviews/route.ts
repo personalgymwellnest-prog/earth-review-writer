@@ -16,7 +16,6 @@ const submitSchema = z
     highlights: z.array(z.string()).max(20),
     impressions: z.array(z.string()).max(20),
     audiences: z.array(z.string()).max(20),
-    rating: z.number().int().min(3).max(5),
   })
   .superRefine((value, ctx) => {
     const service = SERVICES[value.service as keyof typeof SERVICES];
@@ -54,7 +53,6 @@ export async function POST(request: Request) {
     highlights: resolveHighlightPhrases(service, answers.highlights),
     impressions: resolveImpressionVariants(service, answers.impressions),
     audiences: answers.audiences,
-    rating: answers.rating,
   });
 
   // The draft text is generated locally and doesn't depend on the database,
@@ -70,7 +68,6 @@ export async function POST(request: Request) {
         reasons: JSON.stringify(answers.reasons),
         highlights: JSON.stringify(answers.highlights),
         impression: answers.impressions.length > 0 ? JSON.stringify(answers.impressions) : null,
-        rating: answers.rating,
         drafts: JSON.stringify(drafts),
       },
     });

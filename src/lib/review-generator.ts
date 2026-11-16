@@ -10,7 +10,6 @@ export type SurveyAnswers = {
   highlights: string[]; // complete sentences
   impressions: string[][]; // per-tone sentence variants
   audiences: string[]; // e.g. "運動初心者の方"
-  rating: number; // 3-5
 };
 
 function fill(template: string, vars: Record<string, string>): string {
@@ -33,10 +32,8 @@ function pickOne<T>(items: readonly T[]): T {
 type Tone = {
   openers: string[];
   reasonBridges: string[];
-  closersPositive: string[]; // use {target}, e.g. "堺市北区でピラティスをお探しの方、特に姿勢が気になる方"
-  closersModerate: string[];
-  fillersPositive: string[]; // optional extra sentences to reach the target length
-  fillersModerate: string[];
+  closers: string[]; // use {target}, e.g. "堺市北区でピラティスをお探しの方、特に姿勢が気になる方"
+  fillers: string[]; // optional extra sentences to reach the target length
 };
 
 // The order of TONES must match the order of `variants` in each impression
@@ -53,22 +50,14 @@ const TONES: Tone[] = [
       "以前から{reason}が気になっており、思い切って申し込みました。",
       "{reason}が気になっていたこともあり、今回体験させていただくことにしました。",
     ],
-    closersPositive: [
+    closers: [
       "これから通うのがとても楽しみです。{target}には自信を持っておすすめできます。",
       "入会を前向きに検討しています。{target}にはぜひおすすめしたいです。",
     ],
-    closersModerate: [
-      "全体的に丁寧に対応していただけたので、今後の参考にしたいと思います。",
-      "検討中の方は、まず体験を受けてみるのがおすすめだと思います。",
-    ],
-    fillersPositive: [
+    fillers: [
       "体験させていただいて本当によかったです。",
       "全体を通して、充実した時間を過ごせました。",
       "{area}で{noun}を探している方の参考になれば嬉しいです。",
-    ],
-    fillersModerate: [
-      "実際に体験することで、具体的なイメージを持つことができました。",
-      "{area}で{noun}を検討している方の参考になれば幸いです。",
     ],
   },
   // 2. 共感・温かみ
@@ -81,22 +70,14 @@ const TONES: Tone[] = [
       "{reason}が気になっていたのがきっかけです。",
       "ずっと{reason}が気になっていました。",
     ],
-    closersPositive: [
+    closers: [
       "{target}には、本当におすすめしたいです。",
       "これからが楽しみです。{target}は、ぜひ一度体験してみてください。",
     ],
-    closersModerate: [
-      "丁寧に向き合っていただけたので、じっくり検討してみようと思います。",
-      "焦らず自分のペースで考えられそうだと感じました。",
-    ],
-    fillersPositive: [
+    fillers: [
       "体験してみて本当によかったなと思います。",
       "あっという間に時間が過ぎていきました。",
       "{area}で{noun}を探している方の参考になればと思い、投稿しました。",
-    ],
-    fillersModerate: [
-      "実際に体験してみることで、イメージが湧きました。",
-      "{area}で{noun}を検討している方の参考になればと思い、投稿しました。",
     ],
   },
   // 3. 率直・シンプル
@@ -106,19 +87,14 @@ const TONES: Tone[] = [
       "{store}さんの{experienceFull}を受けてみました。",
     ],
     reasonBridges: ["もともと{reason}が気になっていたので、良いきっかけになりました。"],
-    closersPositive: [
+    closers: [
       "{target}におすすめです。",
       "また行きたいと思える体験でした。{target}にぜひ。",
     ],
-    closersModerate: ["参考になる体験でした。"],
-    fillersPositive: [
+    fillers: [
       "体験してよかったです。",
       "全体的に満足です。",
       "{area}で{noun}を探している方の参考になれば。",
-    ],
-    fillersModerate: [
-      "実際に体験できてよかったです。",
-      "{area}で{noun}を検討している方の参考になれば。",
     ],
   },
 ];
@@ -143,13 +119,12 @@ function buildDraft(service: ServiceConfig, tone: Tone, toneIndex: number, answe
   const audience = joinAudiences(shuffle(answers.audiences));
   vars.target = `${STORE.areaName}で${service.noun}をお探しの方${audience ? `、特に${audience}` : ""}`;
   const toSentence = (text: string) => (/[。！？!?]$/.test(text) ? text : `${text}。`);
-  const positive = answers.rating >= 4;
 
   const intro = [toSentence(fill(pickOne(tone.openers), vars))];
   if (answers.reasons.length > 0) {
     intro.push(toSentence(fill(pickOne(tone.reasonBridges), vars)));
   }
-  const outro = [toSentence(fill(pickOne(positive ? tone.closersPositive : tone.closersModerate), vars))];
+  const outro = [toSentence(fill(pickOne(tone.closers), vars))];
 
   const highlights = shuffle(answers.highlights).map((text) =>
     toSentence(text.replace("__AREA__", STORE.areaName))
@@ -168,7 +143,7 @@ function buildDraft(service: ServiceConfig, tone: Tone, toneIndex: number, answe
     if (i < impressions.length) optional.push({ text: impressions[i], kind: "feel" });
     if (i + 1 < highlights.length) optional.push({ text: highlights[i + 1], kind: "body" });
   }
-  for (const fillerText of shuffle(positive ? tone.fillersPositive : tone.fillersModerate)) {
+  for (const fillerText of shuffle(tone.fillers)) {
     optional.push({ text: toSentence(fill(fillerText, vars)), kind: "feel" });
   }
 

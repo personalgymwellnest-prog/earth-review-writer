@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { ChipGroup } from "@/components/ChipGroup";
 import { DraftCard } from "@/components/DraftCard";
-import { SATISFACTION_OPTIONS, SERVICES, SERVICE_KEYS, type ServiceKey } from "@/lib/survey-options";
+import { SERVICES, SERVICE_KEYS, type ServiceKey } from "@/lib/survey-options";
 
 type SurveyFormProps = {
   googleReviewUrls: Record<ServiceKey, string>;
@@ -20,13 +20,11 @@ export function SurveyForm({ googleReviewUrls }: SurveyFormProps) {
   const [highlights, setHighlights] = useState<string[]>([]);
   const [impressions, setImpressions] = useState<string[]>([]);
   const [audiences, setAudiences] = useState<string[]>([]);
-  const [satisfaction, setSatisfaction] = useState<string[]>([]);
   const [error, setError] = useState<string | null>(null);
   const [submissionId, setSubmissionId] = useState<string | null>(null);
   const [drafts, setDrafts] = useState<string[]>([]);
 
   const config = service ? SERVICES[service] : null;
-  const rating = SATISFACTION_OPTIONS.find((option) => option.label === satisfaction[0])?.rating ?? 0;
 
   function chooseService(labels: string[]) {
     const next = SERVICE_KEYS.find((key) => SERVICES[key].label === labels[0]) ?? null;
@@ -43,7 +41,6 @@ export function SurveyForm({ googleReviewUrls }: SurveyFormProps) {
   function validate(): string | null {
     if (!service) return "ご利用のサービスを選んでください。";
     if (highlights.length === 0) return "良かった点を1つ以上選んでください。";
-    if (rating === 0) return "総合満足度を選んでください。";
     return null;
   }
 
@@ -60,7 +57,7 @@ export function SurveyForm({ googleReviewUrls }: SurveyFormProps) {
       const response = await fetch("/api/reviews", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ service, reasons, highlights, impressions, audiences, rating }),
+        body: JSON.stringify({ service, reasons, highlights, impressions, audiences }),
       });
       const data = await response.json();
       if (!response.ok || !data.ok) {
@@ -166,16 +163,6 @@ export function SurveyForm({ googleReviewUrls }: SurveyFormProps) {
           <section className="flex flex-col gap-3">
             <h2 className="font-serif text-lg text-ink">5. どんな方におすすめしたいですか?(任意・複数選択可)</h2>
             <ChipGroup options={config.audiences} selected={audiences} onChange={setAudiences} />
-          </section>
-
-          <section className="flex flex-col gap-3">
-            <h2 className="font-serif text-lg text-ink">6. 総合満足度</h2>
-            <ChipGroup
-              options={SATISFACTION_OPTIONS.map((option) => option.label)}
-              selected={satisfaction}
-              onChange={setSatisfaction}
-              mode="single"
-            />
           </section>
         </>
       )}

@@ -28,14 +28,6 @@ export type ServiceConfig = {
   audiences: string[];
 };
 
-// Overall satisfaction as choices (instead of stars). `rating` (3-5) only
-// decides how enthusiastic the closing sentence is.
-export const SATISFACTION_OPTIONS = [
-  { label: "とても満足", rating: 5 },
-  { label: "満足", rating: 4 },
-  { label: "ふつう", rating: 3 },
-] as const;
-
 const GYM: ServiceConfig = {
   key: "gym",
   label: "パーソナルジム",

@@ -18,7 +18,7 @@ model ReviewSubmission {
   highlights   String // JSON-encoded string array
   trainerName  String?
   impression   String?
-  rating       Int
+  rating       Int? // no longer asked; kept for old rows
   note         String?
 
   drafts        String // JSON-encoded string array of the 3 generated drafts
