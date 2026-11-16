@@ -11,6 +11,8 @@ model ReviewSubmission {
   id        String   @id @default(cuid())
   createdAt DateTime @default(now())
 
+  service      String   @default("gym") // "gym" | "pilates"
+  audiences    String   @default("[]") // JSON-encoded string array ("おすすめしたい方")
   course       String? // no longer asked; kept for old rows
   reasons      String // JSON-encoded string array
   highlights   String // JSON-encoded string array

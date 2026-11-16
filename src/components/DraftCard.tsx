@@ -28,7 +28,7 @@ export function DraftCard({ label, text, onOpenGoogle }: DraftCardProps) {
       <textarea
         value={value}
         onChange={(event) => setValue(event.target.value)}
-        rows={6}
+        rows={10}
         className="w-full resize-none rounded-xl border border-line bg-paper px-4 py-3 text-sm leading-relaxed text-ink focus:border-accent focus:outline-none"
       />
       <p className="text-right text-xs text-ink-soft">{value.length}文字</p>
@@ -45,7 +45,7 @@ export function DraftCard({ label, text, onOpenGoogle }: DraftCardProps) {
           onClick={() => onOpenGoogle(value)}
           className="rounded-full bg-accent px-5 py-2 text-sm text-paper transition hover:bg-accent-soft"
         >
-          この文章でGoogleクチコミを書く
+          この文章でGoogleの口コミを書く
         </button>
       </div>
     </div>

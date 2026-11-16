@@ -44,7 +44,7 @@ export default async function AdminPage() {
   return (
     <main className="mx-auto max-w-4xl px-6 py-12 sm:px-8">
       <div className="mb-8 flex items-center justify-between">
-        <h1 className="font-serif text-2xl text-ink">クチコミ下書き 送信一覧</h1>
+        <h1 className="font-serif text-2xl text-ink">口コミ下書き 送信一覧</h1>
         <LogoutButton />
       </div>
 
@@ -65,6 +65,7 @@ export default async function AdminPage() {
           const highlights = JSON.parse(submission.highlights) as string[];
           const reasons = JSON.parse(submission.reasons) as string[];
           const impressions = parseImpressions(submission.impression);
+          const audiences = parseImpressions(submission.audiences);
           return (
             <article
               key={submission.id}
@@ -72,6 +73,7 @@ export default async function AdminPage() {
             >
               <div className="mb-3 flex flex-wrap items-center gap-3 text-xs text-ink-soft">
                 <span>{submission.createdAt.toLocaleString("ja-JP")}</span>
+                <span>{submission.service === "pilates" ? "ピラティス" : "パーソナルジム"}</span>
                 <span>満足度 {"★".repeat(submission.rating)}</span>
                 {submission.postedToGoogle && (
                   <span className="rounded-full bg-moss/10 px-2 py-0.5 text-moss">投稿済み</span>
@@ -82,6 +84,9 @@ export default async function AdminPage() {
                 <p className="mb-1 text-xs text-ink-soft">きっかけ: {reasons.join(" / ")}</p>
               )}
               <p className="mb-1 text-xs text-ink-soft">良かった点: {highlights.join(" / ")}</p>
+              {audiences.length > 0 && (
+                <p className="mb-1 text-xs text-ink-soft">おすすめしたい方: {audiences.join(" / ")}</p>
+              )}
               {impressions.length > 0 && (
                 <p className="mb-3 text-xs text-ink-soft">印象: {impressions.join(" / ")}</p>
               )}

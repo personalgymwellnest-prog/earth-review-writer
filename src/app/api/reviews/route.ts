@@ -7,21 +7,34 @@ import {
   resolveImpressionVariants,
   resolveReasonPhrases,
 } from "@/lib/review-generator";
-import { HIGHLIGHT_OPTIONS, IMPRESSION_OPTIONS, REASON_OPTIONS } from "@/lib/survey-options";
+import { SERVICES, SERVICE_KEYS } from "@/lib/survey-options";
 
-const reasonLabels = REASON_OPTIONS.map((option) => option.label);
-const highlightLabels = HIGHLIGHT_OPTIONS.map((option) => option.label);
-const impressionLabels = IMPRESSION_OPTIONS.map((option) => option.label);
-
-const submitSchema = z.object({
-  reasons: z.array(z.enum(reasonLabels as [string, ...string[]])).max(reasonLabels.length),
-  highlights: z
-    .array(z.enum(highlightLabels as [string, ...string[]]))
-    .min(1, "良かった点を1つ以上選んでください")
-    .max(highlightLabels.length),
-  impressions: z.array(z.enum(impressionLabels as [string, ...string[]])).max(impressionLabels.length),
-  rating: z.number().int().min(1).max(5),
-});
+const submitSchema = z
+  .object({
+    service: z.enum(SERVICE_KEYS as [string, ...string[]]),
+    reasons: z.array(z.string()).max(20),
+    highlights: z.array(z.string()).max(20),
+    impressions: z.array(z.string()).max(20),
+    audiences: z.array(z.string()).max(20),
+    rating: z.number().int().min(3).max(5),
+  })
+  .superRefine((value, ctx) => {
+    const service = SERVICES[value.service as keyof typeof SERVICES];
+    const checks: [string, string[], string[]][] = [
+      ["reasons", value.reasons, service.reasons.map((o) => o.label)],
+      ["highlights", value.highlights, service.highlights.map((o) => o.label)],
+      ["impressions", value.impressions, service.impressions.map((o) => o.label)],
+      ["audiences", value.audiences, service.audiences],
+    ];
+    for (const [field, selected, allowed] of checks) {
+      if (selected.some((label) => !allowed.includes(label))) {
+        ctx.addIssue({ code: "custom", path: [field], message: "選択内容が正しくありません。" });
+      }
+    }
+    if (value.highlights.length === 0) {
+      ctx.addIssue({ code: "custom", path: ["highlights"], message: "良かった点を1つ以上選んでください" });
+    }
+  });
 
 export async function POST(request: Request) {
   const body = await request.json().catch(() => null);
@@ -35,10 +48,12 @@ export async function POST(request: Request) {
   }
 
   const answers = parsed.data;
-  const drafts = generateDrafts({
-    reasons: resolveReasonPhrases(answers.reasons),
-    highlights: resolveHighlightPhrases(answers.highlights),
-    impressions: resolveImpressionVariants(answers.impressions),
+  const service = answers.service as keyof typeof SERVICES;
+  const drafts = generateDrafts(service, {
+    reasons: resolveReasonPhrases(service, answers.reasons),
+    highlights: resolveHighlightPhrases(service, answers.highlights),
+    impressions: resolveImpressionVariants(service, answers.impressions),
+    audiences: answers.audiences,
     rating: answers.rating,
   });
 
@@ -50,6 +65,8 @@ export async function POST(request: Request) {
   try {
     const submission = await prisma.reviewSubmission.create({
       data: {
+        service,
+        audiences: JSON.stringify(answers.audiences),
         reasons: JSON.stringify(answers.reasons),
         highlights: JSON.stringify(answers.highlights),
         impression: answers.impressions.length > 0 ? JSON.stringify(answers.impressions) : null,

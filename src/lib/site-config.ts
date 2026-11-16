@@ -13,10 +13,13 @@ export const STORE = {
     encodeURIComponent("大阪府堺市北区北長尾町1-5-13 Bel Rosso 2F"),
 } as const;
 
-// Prefer a Google Business Profile "get more reviews" short link
-// (Google Business Profile > クチコミ > クチコミの入力を依頼), which drops the
-// customer straight into the star-rating + review-text screen. Until that's
-// configured, fall back to a maps search link the customer can find
-// "クチコミを書く" from.
-export const GOOGLE_REVIEW_URL =
-  process.env.NEXT_PUBLIC_GOOGLE_REVIEW_URL?.trim() || STORE.mapLinkHref;
+// Google Business Profile "get more reviews" short links (Business Profile >
+// 口コミ > 口コミの入力を依頼), which drop the customer straight into the
+// star-rating + review-text screen. Each service has its own Google listing.
+// The env vars can override these defaults without a code change.
+export const GOOGLE_REVIEW_URLS = {
+  gym:
+    process.env.NEXT_PUBLIC_GOOGLE_REVIEW_URL?.trim() || "https://g.page/r/CTEf2Kdk-1l4EAI/review",
+  pilates:
+    process.env.NEXT_PUBLIC_PILATES_REVIEW_URL?.trim() || "https://g.page/r/CYhdxTQ8dDPrEAE/review",
+} as const;
